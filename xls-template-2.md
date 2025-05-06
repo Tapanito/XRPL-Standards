@@ -24,8 +24,9 @@ Affiliation:
   - [**2.1. Example Ledger Entry**](#21-loanbroker-ledger-entry)
     - [**2.1.1. Object Identifier**](#211-object-identifier)
     - [**2.1.2. Fields**](#212-fields)
-    - [**2.1.4. Ownership**](#214-ownership)
-    - [**2.1.5. Reserves**](#215-reserves)
+    - [**2.1.3. Ownership**](#213-ownership)
+    - [**2.1.4. Reserves**](#214-reserves)
+    - [**2.1.5. Deletion**](#215-deletion)
 - [**3. Transactions**](#3-transactions)
   - [**3.1. Example Transactions**](#31-loanbroker-transactions)
     - [**3.1.1. Set Transaction**](#311-loanbrokerset)
@@ -77,6 +78,14 @@ Below is an example of the Lending Protocol system diagram.
 
 [**Return to Index**](#index)
 
+## TODO. Serializable Fields
+
+- What are serializable fields?
+
+This is an optional section listing new serializable fields introduced by XRP Ledger. Serializable Fields should not be introduced lightly. Existing fields, that can be found in [rippled](https://github.com/XRPLF/rippled/blob/develop/include/xrpl/protocol/detail/sfields.macro), should cover majority of use-cases. However, if additional fields have to be introduced, this must be done in this section.
+
+
+
 ## 2. Ledger Entries
 
 Ledger Entries documents one or more new ledger entry objects introduced or modified by the specification. Each ledger entry must be in it's own numbered section.
@@ -98,17 +107,16 @@ The key of the `Example` object is the result of [`SHA512-Half`](https://xrpl.or
 
 This subsection lists the object fields, indicating whether a field is modifiable, optional, it's JSON type, Internal Type and the Default Value.
 
-- `Modifiable`: The column takes one of the three values: `Yes`, `No` and `N/A`
+- `Constant`: The column takes one of the following values:
 
   - `Yes` - the field is modifiable
-  - `No` - the field is not modifiable, but this condition may change in the future
-  - `N/A` - this field is not directly modifiable by the user. This value is reserved to fields that are only modified due to some protocol condition
+  - `No` - the field is not modifiable
 
-- `Required`: The column takes one of the three values: `Yes`, `No`, `Conditional`
+- `Required`: The column takes one of the following values:
 
   - `Yes` - The field is required
   - `No` - The field is optional
-  - `Conditional` - The field is required under certain circumstances, these circumstances must be described in Fields subsection
+  - `Conditional` - The field is required under certain circumstances, these circumstances must be described in the subsection following the fields table.
 
 - `Internal Type`: The internal type of the field. Refer to [rippled](https://github.com/XRPLF/rippled/blob/develop/include/xrpl/protocol/detail/sfields.macro) for all internal types. Internal types must be in all capital letters
 
@@ -117,6 +125,7 @@ This subsection lists the object fields, indicating whether a field is modifiabl
   - `N/A` - The field does not have a default value
 
 - `Description` is a brief description of the field. In case further details are needed, these must be written in the subsection bellow.
+
   The `Example` object has the following fields:
 
 | Field Name          | Modifiable? | Required? | Internal Type | Default Value | Description                                                                           |
