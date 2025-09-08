@@ -1,0 +1,79 @@
+<pre>
+    title: XLS Versioning and Update Process
+    description: A proposal to introduce a versioning system and a formal process for updating XRP Ledger Standards.
+    author: Vito Tumas (@Tapanito)
+    status: Discussion
+    category: Meta
+    created: 2025-09-08
+</pre>
+
+# 1. Abstract
+
+This document proposes a versioning system and a formal process for updating XRP Ledger Standards (XLSes). It introduces semantic versioning to track the evolution of a standard and clarifies how changes are made, especially to `Final` specifications. The goal is to provide a clear and transparent history of changes within a single, canonical document, distinguishing between minor functional updates and simple editorial corrections.
+
+# 2. Motivation
+
+The current XLS process does not define a structured way to handle updates to specifications after they are merged. This is particularly ambiguous for standards with a `Final` status, which are meant to be stable.
+
+An alternative to in-place updates is to create a new XLS for each change, which would supersede the previous one. However, this approach has significant drawbacks. It would lead to a proliferation of many small, incremental XLS documents for a single logical standard. To understand the complete specification, a developer would need to find and read the entire chain of updates (e.g., XLS-1002 updates XLS-1001, which updates XLS-1000), and build a mental model of the final result. This is a confusing and error-prone process that places a significant burden on the community.
+
+This proposal introduces a clear, in-place versioning system to address these issues. It ensures that a single XLS document remains the canonical source of truth for a standard, while providing a transparent history of its evolution.
+
+# 3. Specification
+
+This proposal introduces three main components: a version number in the preamble, a changelog section, and a defined update process.
+
+## 3.1. XLS Versioning
+
+All XLSes in `Draft` status or beyond will include a version number that follows a `MAJOR.MINOR.PATCH` format.
+
+*   **Initial Version**: An XLS is initially versioned `0.1.0` as a `Draft`. When it becomes `Final`, its version is set to `1.0.0`.
+*   **MAJOR Version**: The MAJOR version is reserved for breaking changes or for updates so significant they are considered a new feature. The MAJOR version of a `Final` XLS cannot be incremented within the same document. Instead, a change of this magnitude **must** be proposed as a new, separate XLS. This new XLS would, for example, represent version `2.0.0` of the standard and would formally deprecate the original XLS (version `1.x.x`). This ensures that breaking changes receive the full scrutiny of the XLS process as a new proposal.
+*   **MINOR Version**: Incremented for non-breaking, substantive changes. This includes bug fixes to the specification logic, or the addition of new optional fields or features that do not break backward compatibility.
+*   **PATCH Version**: Incremented for non-substantive, editorial changes. This includes fixing typos, correcting errata, improving documentation, or adding non-normative clarifications.
+
+## 3.2. Preamble and Changelog
+
+To support versioning, the following changes will be made to the XLS format:
+
+1.  **New `version` Header**: A `version` field will be added to the preamble of all XLSes.
+
+    ```
+    <pre>
+        ...
+        status: Final
+        version: 1.0.0
+        created: 2025-09-08
+        ...
+    </pre>
+    ```
+
+2.  **New `Changelog` Section**: A mandatory `Changelog` section will be added to the Appendix of all XLSes. This section will contain a dated list of all version changes and a summary of what was changed.
+
+    ```
+    # Appendix
+    ## Changelog
+
+    *   **v1.1.0** (2025-10-01): Added field Y and deprecated field Z.
+    *   **v1.0.1** (2025-09-15): Corrected typo in the specification for FieldX.
+    *   **v1.0.0** (2025-09-08): Became Final.
+    *   **v0.1.0** (2025-08-29): Initial draft.
+    ```
+
+## 3.3. Update Process
+
+The process for updating an XLS depends on its status and the nature of the change.
+
+*   **`Draft` XLSes**: Can be updated at any time. The version should be `0.x.y`, and can be incremented by the author as changes are made.
+
+*   **`Final` XLSes**:
+    *   **Patch Updates**: For editorial changes, an XLS Editor can directly merge the changes into the `Final` spec and increment the PATCH version.
+    *   **Minor Updates**: For substantive, non-breaking changes, the XLS must be moved back to `Draft` status. The proposed changes are then submitted via a pull request. After review and consensus, an Editor merges the changes, increments the MINOR version (and resets PATCH to 0), and moves the XLS back to `Final` status.
+
+*   **`Living` XLSes**: Can be updated with `minor` or `patch` changes at any time without changing their `Living` status.
+
+# 4. Rationale
+
+This process provides a clear path for the evolution of standards. Requiring `Final` specs to revert to `Draft` for `minor` updates ensures that substantive changes receive the same level of scrutiny as new proposals, maintaining the integrity of the standards process. At the same time, allowing direct `patch` updates for editorial fixes provides a low-friction way to improve the quality of documentation.
+
+Furthermore, this in-place update model avoids the fragmentation and confusion of creating new XLSes for each update. It ensures that each standard's specification remains in a single, canonical document, which is easier for developers and implementers to find, read, and understand.
