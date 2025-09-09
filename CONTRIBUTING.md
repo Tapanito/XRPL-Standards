@@ -5,8 +5,13 @@
     status: Discussion
     category: Meta
     created: 2025-08-29
+    version: 0.2.0
 </pre>
 
+# Changelog
+
+* (2025-09-09) 0.2.0: Introduced a process for superseeding and updating specification versions.
+* (2025-08-29) 0.1.0: Introduced the initial version of the XLS Process and Guidelines
 # 1. Abstract
 
 This document formalizes the XRP Ledger Standards (XLS) process, clarifying categories of standards, defining their lifecycle, and establishing editorial responsibilities. It:
@@ -67,13 +72,17 @@ Every XLS must have a status included in its heading:
 
 * **Idea**: An idea that is pre-draft. This is reflected by the “pre-proposal idea” category in the existing XLS discussions.
 * **Discussion**: An idea that is pre-draft. This is any other discussion in the Discussions section of the `XRPL-Standards` repo.
-* **Draft**: The first formally tracked stage of an XLS in development. An XLS is merged by an XLS Editor into the XLS repository when properly formatted. XLS numbers will be assigned at this stage.
-* **Final**: This XLS represents the final standard. A `Final` XLS exists in a state of finality and should only be updated to correct errata and add non-normative clarifications. For rippled-related XLSes, the XLS can only be considered `Final` once the rippled PR has been merged. For other XLSes, there needs to be at least one project that has implemented full support of the Standard.
-* **Living**: A special status for XLSes that are designed to be continually updated and not reach a state of finality. This includes, for example, this XLS.
+* **Draft**: The first formally tracked stage of an XLS in development. An XLS is merged by an XLS Editor into the XLS repository when properly formatted, and assigned a version of `0.1.0`. XLS numbers will be assigned at this stage. Authors can update `Draft` XLSes at any time.
+* **Final**: This XLS represents the final standard. A `Final` XLS exists in a state of finality. Editorial changes (incrementing the `PATCH` version) can be merged directly by an editor. Substantive, non-breaking changes (incrementing the `MINOR` version) require the XLS to be moved back to `Draft` status for review. Breaking changes (`MAJOR` version) must be proposed as a new, superseding XLS. For rippled-related XLSes, the XLS can only be considered `Final` once the rippled PR has been merged. For other XLSes, there needs to be at least one project that has implemented full support of the Standard.
+* **Living**: A special status for XLSes that are designed to be continually updated and not reach a state of finality. This includes, for example, this XLS. `Living` documents can be updated with `minor` or `patch` changes at any time without changing their status.
 * **Deprecated**: This is an XLS in any category that was deprecated, as it is no longer supported. Due to the nature of XRP Ledger such features, especially amendment ones, may or may not be permanently removed from the codebase. Only a `Final` feature may be `Deprecated` .
 * **Stagnant**: Any XLS in `Draft` if inactive for a period of 6 months or greater is moved to `Stagnant`. An XLS may be resurrected from this state by Authors or XLS Editors through moving it back to Draft.
 * **Withdrawn**: The XLS Author(s) have withdrawn the proposed XLS. This state has finality and can no longer be resurrected using this XLS number. If the idea is pursued at a later date it is considered a new proposal.
   * If the XLS is withdrawn because it is superseded, the newer replacement XLS is linked.
+
+A **non-breaking change** (or backward-compatible change) is a modification to the standard that does not prevent existing, compliant implementations from continuing to operate. For example, adding a new optional field or a new transaction type is typically a non-breaking change.
+
+A **breaking change** (or backward-incompatible change) is a modification that would require existing implementations to be updated to remain compliant. Examples include changing the data type of an existing field, removing a field, or making an optional field mandatory. All XLSes that introduce backwards incompatibilities must include a section describing them. Breaking changes to a `Final` standard require a new, superseding XLS.
 
 <img width="951" height="471" alt="image" src="https://github.com/user-attachments/assets/7371b656-023e-486b-8945-7b7581ca6927" />
 
@@ -92,6 +101,7 @@ The only formatting requirement for a `Discussion` is that its title must includ
 Any XLS that wants to be considered for `Draft` status should have the following parts:
 
 * **Preamble**: RFC 822 style headers containing metadata about the XLS, including the XLS number, a short descriptive title (limited to a maximum of 44 characters), a description (limited to a maximum of 140 characters), and the author details. Irrespective of the category, the title and description should not include XLS number. See below for details.
+* **Changelog**: A dated list of all version changes and a summary of what was changed. This section is mandatory for all XLSes with a version.
 * **Abstract**: Abstract is a multi-sentence (short paragraph) technical summary. This should be a very terse and human-readable version of the specification section. Someone should be able to read only the abstract to get the gist of what this specification does.
 * **Motivation** (optional): A motivation section is critical for XLSes that want to change the protocol. It should clearly explain why the existing protocol specification is inadequate to address the problem that the XLS solves. This section may be omitted if the motivation is evident.
 * **Specification**: The technical specification should describe the syntax and semantics of any new feature. The specification should be detailed enough to allow competing, interoperable implementations. See below for details.
@@ -102,7 +112,7 @@ Any XLS that wants to be considered for `Draft` status should have the following
 * **Design Discussion** (optional): An optional section that summarizes why the given design decisions were made, to avoid the need to rehash that discussion.
 * **Security Considerations**: All XLSes must contain a section that discusses the security implications/considerations relevant to the proposed change. Include information that might be important for security discussions, surfaces risks, and can be used throughout the life-cycle of the proposal. E.g. include security-relevant design decisions, concerns, important discussions, implementation-specific guidance and pitfalls, an outline of threats and risks and how they are being addressed. XLS submissions missing the `Security Considerations` section will be rejected. An XLS cannot proceed to status `Final` without a `Security Considerations` discussion deemed sufficient by the reviewers.
 * **Appendix** (optional): Other information pertaining to the spec that are not strictly a part of the spec, such as tradeoffs and alternate approaches considered.
-  * **FAQ** (optional): A list of questions the author expects to be asked about the spec, and their answers. It is highly recommended but not required to include this section, to make it easier for spec readers to understand it.
+    * **FAQ** (optional): A list of questions the author expects to be asked about the spec, and their answers. It is highly recommended but not required to include this section, to make it easier for spec readers to understand it.
 
 ### 4.3.1. Preamble
 
@@ -113,10 +123,12 @@ Each XLS must begin with an [RFC 822](https://www.ietf.org/rfc/rfc822.txt) style
 * `description`: Description is one full (short) sentence
 * `author`: The list of the author’s or authors’ name(s) and/or username(s), or name(s) and email(s).
 * `status`: `Draft`, `Final`, `Living`, `Deprecated`, `Stagnant`, `Withdrawn`
+* `version`: The version of this XLS, e.g. `1.0.0`.
 * `category`: One of `Amendment`, `System`, `Community`, or `Meta`.
 * `created`: Date the XLS was created on.
 * `discussion-from`: A link to the `Discussion` associated with this XLS.
-* `requires`: XLS number(s) (Optional field)
+* `requires`: XLS number(s) this spec depends on. (Optional field)
+* `supersedes`: XLS number(s) this spec supersedes. (Optional field)
 * `withdrawal-reason`: A sentence explaining why the XLS was withdrawn. (Optional field, only needed when status is Withdrawn. If this proposal was superseded by another, that can be listed here.)
 * `updated`: The date the XLS was last updated.
 
