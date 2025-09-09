@@ -112,7 +112,7 @@ Any XLS that wants to be considered for `Draft` status should have the following
 * **Design Discussion** (optional): An optional section that summarizes why the given design decisions were made, to avoid the need to rehash that discussion.
 * **Security Considerations**: All XLSes must contain a section that discusses the security implications/considerations relevant to the proposed change. Include information that might be important for security discussions, surfaces risks, and can be used throughout the life-cycle of the proposal. E.g. include security-relevant design decisions, concerns, important discussions, implementation-specific guidance and pitfalls, an outline of threats and risks and how they are being addressed. XLS submissions missing the `Security Considerations` section will be rejected. An XLS cannot proceed to status `Final` without a `Security Considerations` discussion deemed sufficient by the reviewers.
 * **Appendix** (optional): Other information pertaining to the spec that are not strictly a part of the spec, such as tradeoffs and alternate approaches considered.
-* **FAQ** (optional): A list of questions the author expects to be asked about the spec, and their answers. It is highly recommended but not required to include this section, to make it easier for spec readers to understand it.
+    * **FAQ** (optional): A list of questions the author expects to be asked about the spec, and their answers. It is highly recommended but not required to include this section, to make it easier for spec readers to understand it.
 
 ### 4.3.1. Preamble
 
