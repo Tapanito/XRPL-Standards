@@ -16,7 +16,7 @@ Decentralized Finance (DeFi) lending represents a transformative force within th
 
 This proposal introduces fundamental primitives for an XRP Ledger-native Lending Protocol. The protocol offers straightforward on-chain uncollateralized fixed-term loans, utilizing pooled funds with pre-set terms for interest-accruing loans. The design relies on off-chain underwriting and risk management to assess the creditworthiness of the borrowers. However, the First-Loss Capital protection scheme absorbs some of the losses in case of a Loan Default.
 
-This version intentionally skips the complex mechanisms of automated on-chain collateral and liquidation management. Instead, it focuses on the primitives and the essential components for on-chain credit origination. Therefore, the primary design principle is flexibility and reusability to enable the introduction of additional complex features in the future.
+This version intentionally skips the complex mechanisms of automated on-chain collateral and liquidation management. Instead, it focuses on the primitives and the essential components for on-chain credit origination. Therefore, the primary design principal is flexibility and reusability to enable the introduction of additional complex features in the future.
 
 ## Index
 
@@ -111,7 +111,7 @@ The Issuer may also Freeze or Deep Freeze the `_pseudo-account_` of the Loan Bro
 
 ### 1.3 Risk Management
 
-Risk management involves mechanisms that mitigate the risks associated with lending. To protect investors' assets, we have introduced an optional first-loss capital protection scheme. This scheme requires the Loan Broker to deposit a fund that can be partially liquidated to cover losses in the event of a loan default. The amount of first-loss capital required is a percentage of the total debt owed to the Vault. In case of a default, a portion of the first-loss capital will be liquidated based on the minimum required cover. The liquidated capital is placed back into the Vault to cover some of the loss.
+Risk management involves mechanisms that mitigate the risks associated with lending. To protect investors' assets, we have introduced an optional first-loss capital protection scheme. This scheme requires the Loan Broker to deposit a fund that can be partially liquidated to cover losses in the event of a loan default. The amount of first-loss capital required is a percentage of the total debt owed to the Vault. In case of a default, a portion of the first-loss capital will be liquidated calculated as the defaulted amount multiplied by the coverage ratio, bounded by the available cover. The liquidated capital is placed back into the Vault to cover some of the loss.
 
 ### 1.4 Interest Rates
 
@@ -351,12 +351,12 @@ DebtTotal   = DebtTotal - PaymentPrincipalAmount - (PaymentInterestPortion - (Pa
 
 #### 2.1.7 First-Loss Capital
 
-The First-Loss Capital is an optional mechanism to protect the Vault depositors from incurring a loss in case of a Loan default. It provides a protective capital buffer for a  loan broker by maintaining a reserve that absorbs losses when loans default. The system tracks three key values: the total outstanding debt across all loans, a required coverage ratio (e.g., 10%), and the amount of first-loss capital currently available in the loan broker. When a loan defaults, the system reduces the total debt by the defaulted amount and liquidates a proportional share of the first-loss capital calculated as the defaulted amount multiplied by the coverage ratio. This ensures that each default draws coverage proportional to its size, bounded by both the coverage ratio requirement and the actual capital available in the pool, providing predictable loss protection while maintaining system solvency. For further details see [the appendix](#a-32-payment-processing)
+The First-Loss Capital is an optional mechanism to protect the Vault depositors from incurring a loss in case of a Loan default. It provides a protective capital buffer for a  loan broker by maintaining a reserve that absorbs losses when loans default. The system tracks three key values: the total outstanding debt across all loans, a required coverage ratio (e.g., 10%), and the amount of first-loss capital currently available in the loan broker. When a loan defaults, the system reduces the total debt by the defaulted amount and liquidates a proportional share of the first-loss capital calculated as the defaulted amount multiplied by the coverage ratio. This ensures that each default draws coverage proportional to its size, bounded by both the coverage ratio requirement and the actual capital available in the pool, providing predictable loss protection while maintaining system solvency. For further details see [the appendix](#a-28-first-loss-capital-default-coverage).
 
 The following parameters control the First-Loss Capital:
 
 - `CoverAvailable` - the total amount of cover deposited by the Lending Protocol Owner.
-- `CoverRateMinimum` - the percentage of `DebtTotal` that must be covered by the `CoverAvailable`.
+- `CoverRateMinimum` - the percentage of `DebtTotal` that determines the minimum required cover (i.e., `minimum cover = DebtTotal × CoverRateMinimum`).
 
 Whenever the available cover falls below the minimum cover required, two consequences occur:
 
@@ -381,13 +381,13 @@ CoverRateMinimum        = 0.1 (10%)
 CoverAvailable          = 1,000 Tokens
 
 -- Loan --
-PrincipleOutstanding  = 1,000 Tokens
+PrincipalOutstanding  = 1,000 Tokens
 InterestOutstanding   = 90 Tokens
 
 
 # First-Loss Capital liquidation maths
 
-DefaultAmount = PrincipleOutstanding + InterestOutstanding
+DefaultAmount = PrincipalOutstanding + InterestOutstanding
               = 1,000 + 90
               = 1,090
 
@@ -403,7 +403,7 @@ Loss                = DefaultAmount - DefaultCovered
 FundsReturned       = DefaultCovered
                     = 109
 
-# Note, Loss + FundsReturned MUST be equal to PrincipleOutstanding + InterestOutstanding
+# Note, Loss + FundsReturned MUST be equal to PrincipalOutstanding + InterestOutstanding
 
 ** State Changes **
 
@@ -419,7 +419,7 @@ AssetsAvailable = AssetsAvailable + FundsReturned
 SharesTotal = (UNCHANGED)
 
 -- Lending Protocol --
-DebtTotal       = DebtTotal - PrincipleOutstanding + InterestOutstanding
+DebtTotal       = DebtTotal - PrincipalOutstanding + InterestOutstanding
                 = 1,090 - (1,000 + 90)
                 = 0 Tokens
 
@@ -692,7 +692,7 @@ The transaction deposits First Loss Capital into the `LoanBroker` object.
 | ----------------- | :----------------: | :-------: | :-----------: | :-----------: | :------------------------------------------------ |
 | `TransactionType` | :heavy_check_mark: | `string`  |   `UINT16`    |     `76`      | The transaction type.                             |
 | `LoanBrokerID`    | :heavy_check_mark: | `string`  |   `HASH256`   |     `N/A`     | The Loan Broker ID to deposit First-Loss Capital. |
-| `Amount`          | :heavy_check_mark: | `object`  |   `AMOUNT`    |       0       | The Fist-Loss Capital amount to deposit.          |
+| `Amount`          | :heavy_check_mark: | `object`  |   `AMOUNT`    |       0       | The First-Loss Capital amount to deposit.          |
 
 ##### 3.1.3.1 Failure Conditions
 
@@ -758,7 +758,7 @@ The `LoanBrokerCoverWithdraw` transaction withdraws the First-Loss Capital from 
 | ----------------- | :----------------: | :-------: | :-----------: | :-----------: | :---------------------------------------------------------------------- |
 | `TransactionType` | :heavy_check_mark: | `string`  |   `UINT16`    |     `77`      | Transaction type.                                                       |
 | `LoanBrokerID`    | :heavy_check_mark: | `string`  |   `HASH256`   |     `N/A`     | The Loan Broker ID from which to withdraw First-Loss Capital.           |
-| `Amount`          | :heavy_check_mark: | `object`  |   `AMOUNT`    |       0       | The Fist-Loss Capital amount to withdraw.                               |
+| `Amount`          | :heavy_check_mark: | `object`  |   `AMOUNT`    |       0       | The First-Loss Capital amount to withdraw.                               |
 | `Destination`     |                    | `string`  |  `AccountID`  |     Empty     | An account to receive the assets. It must be able to receive the asset. |
 
 ##### 3.1.4.1 Failure Conditions
@@ -1410,7 +1410,7 @@ $$
 - `paymentInterval` = `Loan.PaymentInterval` (seconds between payments)
 - `secondsPerYear` = 31,536,000 (365 × 24 × 60 × 60)
 
-#### 1.2 Late Periodic Rate (Penalty Interest)
+#### A-2.1.2 Late Periodic Rate (Penalty Interest)
 
 $$
 latePeriodicRate = \frac{lateInterestRate \times secondsOverdue}{secondsPerYear} \quad \text{(2)}
@@ -1426,13 +1426,13 @@ $$
 - `lateInterestRate` = `Loan.LateInterestRate` (annual penalty rate)
 - `secondsOverdue` = Duration payment is late (in seconds)
 
-#### 1.3 Time Since Last Payment
+#### A-2.1.3 Time Since Last Payment
 
 $$
 secondsSinceLastPayment = lastLedgerCloseTime - \max(Loan.PreviousPaymentDueDate, Loan.StartDate) \quad \text{(4)}
 $$
 
-**Usage:** Calculates the time elapsed since the last payment was due (or since loan origination, whichever is later). Used in early full payment calculations ([Section 5.1](#51-total-due-components)).
+**Usage:** Calculates the time elapsed since the last payment was due (or since loan origination, whichever is later). Used in early full payment calculations ([Section A-2.6.1](#a-261-total-due-components)).
 
 **Why `max()`?**
 
@@ -1458,14 +1458,14 @@ $$
 periodicPayment = PrincipalOutstanding \times factor \quad \text{(7)}
 $$
 
-**Note**: The calculation is split into `raisedRate` and `factor` for numerical stability and to enable the reverse calculation in [Section 2.3](#23-reverse-calculation-principal-from-payment).
+**Note**: The calculation is split into `raisedRate` and `factor` for numerical stability and to enable the reverse calculation in [Section A-2.2.3](#a-223-reverse-calculation-principal-from-payment).
 
 **Special Cases:**
 
 - **Final Payment:** When `paymentsRemaining = 1`, override formula with `periodicPayment = TotalValueOutstanding`
 - **Zero Interest:** When `periodicRate = 0`, simplify to `periodicPayment = PrincipalOutstanding / paymentsRemaining`
 
-#### 2.2 Payment Breakdown
+#### A-2.2.2 Payment Breakdown
 
 From the periodic payment, derive the principal and interest portions:
 
@@ -1480,7 +1480,7 @@ $$
 To
 **Note:** For zero-interest loans, `principal = PrincipalOutstanding / paymentsRemaining` and `interest = 0`.
 
-#### 2.3 Reverse Calculation: Principal from Payment
+#### A-2.2.3 Reverse Calculation: Principal from Payment
 
 Used to detect rounding errors during overpayment processing:
 
@@ -1499,11 +1499,11 @@ $$
 - **Zero Interest:** When `periodicRate = 0`, simplify to:
   $$PrincipalOutstanding = periodicPayment \times paymentsRemaining \quad \text{(11)}$$
 
-### 3. Management Fee Calculations
+### A-2.3. Management Fee Calculations
 
 The Loan Broker charges a management fee as a percentage of the interest earned. This fee is calculated differently depending on the payment scenario.
 
-#### 3.1 Regular Payment Management Fee
+#### A-2.3.1 Regular Payment Management Fee
 
 For standard periodic payments:
 
@@ -1516,7 +1516,7 @@ $$
 - `interest` = Interest portion of a payment (from formula 8)
 - `managementFeeRate` = `LoanBroker.ManagementFeeRate`
 
-#### 3.2 Late Payment Management Fee
+#### A-2.3.2 Late Payment Management Fee
 
 For late payments, the management fee applies to the penalty interest:
 
@@ -1529,7 +1529,7 @@ $$
 - `latePaymentInterest_{gross}` = Gross late payment interest (from formula 15)
 - `managementFeeRate` = `LoanBroker.ManagementFeeRate`
 
-#### 3.3 Overpayment Management Fee
+#### A-2.3.3 Overpayment Management Fee
 
 For overpayments, the management fee applies to the interest charged on the overpayment amount:
 
@@ -1544,11 +1544,11 @@ $$
 
 **Note:** In all cases, the management fee is deducted from the gross interest before calculating the net interest that accrues to the vault.
 
-### 4. Late Payment
+### A-2.4. Late Payment
 
 A late payment adds penalty charges to the standard periodic payment.
 
-#### 4.1 Late Payment Components
+#### A-2.4.1 Late Payment Components
 
 $$
 totalDue = periodicPayment + loanServiceFee + latePaymentFee + latePaymentInterest_{net} \quad \text{(15)}
@@ -1567,7 +1567,7 @@ $$
 - `latePeriodicRate` is defined by formula (2)
 - `managementFee_{late}` is defined by formula (13)
 
-#### 4.2 Value Impact
+#### A-2.4.2 Value Impact
 
 $$
 valueChange = latePaymentInterest_{net} \quad \text{(18)}
@@ -1579,11 +1579,11 @@ $$
 - Not reflected in `Loan.TotalValueOutstanding` (unanticipated value increase)
 - Applied directly to `Vault.AssetsTotal` and `LoanBroker.DebtTotal`
 
-### 5. Overpayment Processing
+### A-2.5. Overpayment Processing
 
 Overpayments reduce principal early and trigger loan re-amortization.
 
-#### 5.1 Overpayment Fees and Interest
+#### A-2.5.1 Overpayment Fees and Interest
 
 $$
 overpaymentAmount = amount - (periodicPaymentsCovered \times (periodicPayment + serviceFee)) \quad \text{(19)}
@@ -1612,7 +1612,7 @@ $$
 
 - `managementFee_{overpayment}` is defined by formula (14)
 
-#### 5.2 Principal Reduction
+#### A-2.5.2 Principal Reduction
 
 $$
 principalPortion = overpaymentAmount - overpaymentInterest_{net} - overpaymentFee \quad \text{(23)}
@@ -1626,7 +1626,7 @@ $$
 
 **Note:** The management fee has already been deducted from `overpaymentInterest_{net}`, so it does not appear as a separate term in this formula.
 
-#### 5.3 Re-amortization Value Change
+#### A-2.5.3 Re-amortization Value Change
 
 The pseudo-code in [Appendix A-3.3](#a-33-pseudo-code) handles re-amortization by preserving historical rounding errors while applying the overpayment to reduce the principal. The process follows these logical steps:
 
@@ -1691,7 +1691,7 @@ $$
 
 **Note:** The `valueChange` from re-amortization is typically negative, as reducing principal early decreases future interest.
 
-#### 5.4 Total Value Change from Overpayment
+#### A-2.5.4 Total Value Change from Overpayment
 
 $$
 valueChange_{total} = overpaymentInterest_{net} + valueChange_{re-amortization} \quad \text{(25)}
@@ -1704,11 +1704,11 @@ $$
 
 **Note:** Typically `valueChange_{total} < 0` because the reduction in future interest from re-amortization outweighs the interest charged on the overpayment itself.
 
-### 6. Early Full Repayment
+### A-2.6. Early Full Repayment
 
 Closes the loan before maturity with potential prepayment penalty.
 
-#### 6.1 Total Due Components
+#### A-2.6.1 Total Due Components
 
 $$
 totalDue = PrincipalOutstanding + accruedInterest + prepaymentPenalty + ClosePaymentFee \quad \text{(26)}
@@ -1727,7 +1727,7 @@ $$
 - `periodicRate` is defined by formula (1)
 - `secondsSinceLastPayment` is defined by formula (4)
 
-#### 6.2 Value Impact
+#### A-2.6.2 Value Impact
 
 $$
 valueChange = (accruedInterest + prepaymentPenalty) - totalInterestOutstanding_{net} \quad \text{(29)}
@@ -1743,15 +1743,15 @@ $$
 - Negative if `(accruedInterest + prepaymentPenalty) < InterestOutstanding_{net}` (vault loses future interest)
 - Positive if `(accruedInterest + prepaymentPenalty) > InterestOutstanding_{net}` (penalty exceeds forgiven interest)
 
-### 7. Theoretical Loan Value
+### A-2.7. Theoretical Loan Value
 
-#### 7.1 Total Value Outstanding
+#### A-2.7.1 Total Value Outstanding
 
 $$
 totalValueOutstanding = periodicPayment \times paymentsRemaining \quad \text{(30)}
 $$
 
-#### 7.2 Interest and Fee Breakdown
+#### A-2.7.2 Interest and Fee Breakdown
 
 $$
 totalInterestOutstanding_{gross} = totalValueOutstanding - PrincipalOutstanding \quad \text{(31)}
@@ -1765,11 +1765,11 @@ $$
 totalInterestOutstanding_{net} = totalInterestOutstanding_{gross} - managementFeeOutstanding \quad \text{(33)}
 $$
 
-### 8. First-Loss Capital (Default Coverage)
+### A-2.8. First-Loss Capital (Default Coverage)
 
 Applied when a loan defaults.
 
-#### 8.1 Default Amounts
+#### A-2.8.1 Default Amounts
 
 $$
 DefaultAmount = PrincipalOutstanding + InterestOutstanding_{net} \quad \text{(34)}
@@ -1859,7 +1859,7 @@ This rounded-up value, plus any applicable service fees, constitutes the minimum
 
 Each payment consists of four components:
 
-- **Principal**: The portion that reduces the outstanding loan principle.
+- **Principal**: The portion that reduces the outstanding loan principal.
 - **Interest**: The portion that covers the cost of borrowing for the period.
 - **Fees**: The portion that covers any applicable `serviceFee`, `managementFee`, `latePaymentFee`, or other charges.
 - **ValueChange**: The amount by which the payment changed the value of the Loan.
